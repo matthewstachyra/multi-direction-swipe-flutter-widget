@@ -34,22 +34,22 @@ class _PostScreenState extends State<PostScreen> {
   LinkedHashMap<String, List<String>> posts =
       LinkedHashMap<String, List<String>>.from({
     'Post 1': [
-      'Post 1',
-      'Related to Post 1: 1',
-      'Related to Post 1: 2',
-      'Related to Post 1: 3',
+      '0, 0',
+      '0, 1',
+      '0, 2',
+      '0, 3',
     ],
     'Post 2': [
-      'Post 2',
-      'Related to Post 2: 1',
-      'Related to Post 2: 2',
-      'Related to Post 2: 3',
+      '1, 0',
+      '1, 1',
+      '1, 2',
+      '1, 3',
     ],
     'Post 3': [
-      'Post 3',
-      'Related to Post 3: 1',
-      'Related to Post 3: 2',
-      'Related to Post 3: 3',
+      '2, 0',
+      '2, 1',
+      '2, 2',
+      '2, 3',
     ],
   });
 
@@ -61,63 +61,73 @@ class _PostScreenState extends State<PostScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Posts'),
+          title: const Text('Feed'),
         ),
 
         // vertical scrolling
         body: PageView.builder(itemBuilder: (context, index) {
           // horizontal scrolling for some post in vertical
-          return GestureDetector(onVerticalDragEnd: (details) {
-            if (details.primaryVelocity! < 0 &&
-                verticalIndex < posts.length - 1 &&
-                horizontalIndex == 0) {
-              // Swiped downwards
-              type = SwipeDirection.down;
-              setState(() {
-                verticalIndex++;
-              });
-            } else if (details.primaryVelocity! > 0 &&
-                verticalIndex > 0 &&
-                horizontalIndex == 0) {
-              // Swiped upwards
-              type = SwipeDirection.up;
-              setState(() {
-                verticalIndex -= 1;
-              });
-            }
-          }, onHorizontalDragEnd: (details) {
-            int numRelatedPosts =
-                posts[posts.keys.toList()[verticalIndex]]!.length;
-            if (details.primaryVelocity! < 0 &&
-                horizontalIndex < numRelatedPosts - 1) {
-              // Swiped to the right
-              type = SwipeDirection.right;
-              setState(() {
-                horizontalIndex++;
-                if (posts[verticalIndex] != null) {
-                  horizontalIndex =
-                      horizontalIndex % posts[verticalIndex]!.length;
+          return GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onVerticalDragEnd: (details) {
+                if (details.primaryVelocity! < 0 &&
+                    verticalIndex < posts.length - 1 &&
+                    horizontalIndex == 0) {
+                  // Swiped downwards
+                  type = SwipeDirection.down;
+                  setState(() {
+                    verticalIndex++;
+                  });
+                } else if (details.primaryVelocity! > 0 &&
+                    verticalIndex > 0 &&
+                    horizontalIndex == 0) {
+                  // Swiped upwards
+                  type = SwipeDirection.up;
+                  setState(() {
+                    verticalIndex -= 1;
+                  });
                 }
-              });
-            } else if (details.primaryVelocity! > 0 && horizontalIndex > 0) {
-              // Swiped to the left
-              type = SwipeDirection.left;
-              setState(() {
-                horizontalIndex--;
-                if (posts[verticalIndex] != null) {
-                  horizontalIndex =
-                      horizontalIndex % posts[verticalIndex]!.length;
+              },
+              onHorizontalDragEnd: (details) {
+                int numRelatedPosts =
+                    posts[posts.keys.toList()[verticalIndex]]!.length;
+                List<String> relatedPosts =
+                    posts[posts.keys.toList()[verticalIndex]]!;
+                if (details.primaryVelocity! < 0) {
+                  // Swiped to the right
+                  type = SwipeDirection.right;
+                  setState(() {
+                    horizontalIndex++;
+                    if (relatedPosts != null) {
+                      horizontalIndex = horizontalIndex % numRelatedPosts;
+                    }
+                  });
+                } else if (details.primaryVelocity! > 0 &&
+                    horizontalIndex > 0) {
+                  // Swiped to the left
+                  type = SwipeDirection.left;
+                  setState(() {
+                    horizontalIndex--;
+                    if (relatedPosts != null) {
+                      horizontalIndex = horizontalIndex % numRelatedPosts;
+                    }
+                  });
                 }
-              });
-            }
-          }, child: Builder(builder: (context) {
-            if (posts[posts.keys.toList()[verticalIndex]] != null) {
-              return Container(
-                  child: Text(posts[posts.keys.toList()[verticalIndex]]![
-                      horizontalIndex]));
-            }
-            return Text("Error.");
-          }));
+              },
+              child: Builder(builder: (context) {
+                if (posts[posts.keys.toList()[verticalIndex]] != null) {
+                  return Align(
+                      child: Text(
+                          posts[posts.keys.toList()[verticalIndex]]![
+                              horizontalIndex],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 16,
+                          )));
+                }
+                return Text("Error.");
+              }));
         }));
   }
 }
