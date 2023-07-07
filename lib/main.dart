@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:collection';
 
 void main() {
   runApp(PostApp());
@@ -30,17 +31,27 @@ enum SwipeDirection {
 }
 
 class _PostScreenState extends State<PostScreen> {
-  final List<String> posts = [
-    'Post 1',
-    'Post 2',
-    'Post 3',
-  ];
-
-  final List<String> relatedPosts = [
-    'Related post 1',
-    'Related post 2',
-    'Related post 3',
-  ];
+  LinkedHashMap<String, List<String>> posts =
+      LinkedHashMap<String, List<String>>.from({
+    'Post 1': [
+      'Post 1',
+      'Related to Post 1: 1',
+      'Related to Post 1: 2',
+      'Related to Post 1: 3',
+    ],
+    'Post 2': [
+      'Post 2',
+      'Related to Post 2: 1',
+      'Related to Post 2: 2',
+      'Related to Post 2: 3',
+    ],
+    'Post 3': [
+      'Post 3',
+      'Related to Post 3: 1',
+      'Related to Post 3: 2',
+      'Related to Post 3: 3',
+    ],
+  });
 
   int horizontalIndex = 0;
   int verticalIndex = 0;
@@ -58,13 +69,16 @@ class _PostScreenState extends State<PostScreen> {
           // horizontal scrolling for some post in vertical
           return GestureDetector(onVerticalDragEnd: (details) {
             if (details.primaryVelocity! < 0 &&
-                verticalIndex < posts.length - 1) {
+                verticalIndex < posts.length - 1 &&
+                horizontalIndex == 0) {
               // Swiped downwards
               type = SwipeDirection.down;
               setState(() {
                 verticalIndex++;
               });
-            } else if (details.primaryVelocity! > 0 && verticalIndex > 0) {
+            } else if (details.primaryVelocity! > 0 &&
+                verticalIndex > 0 &&
+                horizontalIndex == 0) {
               // Swiped upwards
               type = SwipeDirection.up;
               setState(() {
@@ -72,27 +86,37 @@ class _PostScreenState extends State<PostScreen> {
               });
             }
           }, onHorizontalDragEnd: (details) {
-            if (details.primaryVelocity! < 0) {
+            int numRelatedPosts =
+                posts[posts.keys.toList()[verticalIndex]]!.length;
+            if (details.primaryVelocity! < 0 &&
+                horizontalIndex < numRelatedPosts - 1) {
               // Swiped to the right
               type = SwipeDirection.right;
               setState(() {
                 horizontalIndex++;
-                horizontalIndex = horizontalIndex % relatedPosts.length;
+                if (posts[verticalIndex] != null) {
+                  horizontalIndex =
+                      horizontalIndex % posts[verticalIndex]!.length;
+                }
               });
-            } else if (details.primaryVelocity! > 0) {
+            } else if (details.primaryVelocity! > 0 && horizontalIndex > 0) {
               // Swiped to the left
               type = SwipeDirection.left;
               setState(() {
                 horizontalIndex--;
-                horizontalIndex = horizontalIndex % relatedPosts.length;
+                if (posts[verticalIndex] != null) {
+                  horizontalIndex =
+                      horizontalIndex % posts[verticalIndex]!.length;
+                }
               });
             }
           }, child: Builder(builder: (context) {
-            if ((type == SwipeDirection.up || type == SwipeDirection.down) &&
-                (horizontalIndex == 0)) {
-              return Container(child: Text(posts[verticalIndex]));
-            } else
-              return Container(child: Text(relatedPosts[horizontalIndex]));
+            if (posts[posts.keys.toList()[verticalIndex]] != null) {
+              return Container(
+                  child: Text(posts[posts.keys.toList()[verticalIndex]]![
+                      horizontalIndex]));
+            }
+            return Text("Error.");
           }));
         }));
   }
