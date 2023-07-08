@@ -61,7 +61,7 @@ class _PostScreenState extends State<PostScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Feed'),
+          title: const Text('Four directions swiping through 2D array'),
         ),
 
         // vertical scrolling
